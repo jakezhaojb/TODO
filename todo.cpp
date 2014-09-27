@@ -44,10 +44,10 @@ void Show(){
 
 
 void Add(int argc, const char* argv[]){
-  // TODO Add multiple tasks. Via , to split string
-  // Two inputs accessible now. But more...
+  // TODO why not concatenate all argv[] and split, parse it to the right place.
   //
-  // TODO why not concatenate all argv[] and split it, parse it into right place.
+  // Not availble for the case: todo -a read,drink,club
+  // which is one argv argument involves multiple comma.
   vector<string> task_buffer;
   string task;
 
