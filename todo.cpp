@@ -27,6 +27,7 @@ void ShowUsage(){ // Funtion to show usages of todo.
 
 
 void Show(){
+  // TODO make it fancy!
   ifstream todo_file("/tmp/todo");
   int cnt = 0;
   string temp;
@@ -43,19 +44,59 @@ void Show(){
 
 
 void Add(int argc, const char* argv[]){
+  // TODO Add multiple tasks. Via , to split string
+  // Two inputs accessible now. But more...
+  //
+  // TODO why not concatenate all argv[] and split it, parse it into right place.
+  vector<string> task_buffer;
   string task;
-  for (int i = 2; i < argc; i++) {
+
+  int comma, i = 1;
+  while(++i < argc){
+    string temp = string(argv[i]);
+    comma = temp.find(',');
+    if (comma != string::npos) {
+      // found a comma in argv[i]
+      if(comma == temp.size()-1){
+        // at the end of the string
+        temp.pop_back();
+        task.append(temp + ' ');
+        task_buffer.push_back(task);
+        task.clear();
+        continue;
+      } else if (comma == temp[0] and temp.size() != 1) {
+        // at the beginning of the string
+        temp.erase(0, 1);
+        task.append(temp);
+        continue;
+      } else if(comma == temp[0] and temp.size() == 1){
+        continue;
+      } else{
+        // at the middle
+        task.append(temp.substr(0, comma));
+        task_buffer.push_back(task);
+        task.clear();
+        task.append(temp.substr(comma+1, temp.size()));
+        continue;
+      }
+    }
     task.append(string(argv[i]) + ' ');
-  } 
+  }
+  task_buffer.push_back(task);
+
+//  for (int i = 2; i < argc; i++) {
+//    task.append(string(argv[i]) + ' ');
+//  } 
   // File entry
   ofstream todo_file("/tmp/todo", ios::app);
   if(!todo_file.is_open()){
     cerr << "No file found." << endl;
     exit(1);
   } else{
-    todo_file << task;
+    for (i = 0; i < task_buffer.size(); i++) {
+      todo_file << task_buffer[i] << '\n';
+    }
   }
-  todo_file << "\n";
   todo_file.close();
 }
 
@@ -72,6 +113,7 @@ int TaskParse(string t){
 
 
 void Remove(int argc, const char* argv[]){
+  // TODO Remove multiple tasks.
   ofstream temp_todo_file("/tmp/todo.tmp");
   ifstream todo_file("/tmp/todo");
   if(!todo_file.is_open()){
