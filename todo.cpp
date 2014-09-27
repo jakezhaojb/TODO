@@ -4,6 +4,7 @@
 #include <vector>
 #include <iomanip>
 #include <cstdio>
+#include <boost/algorithm/string.hpp>
 
 using namespace std;
 
@@ -44,57 +45,21 @@ void Show(){
 
 
 void Add(int argc, const char* argv[]){
-  // TODO why not concatenate all argv[] and split, parse it to the right place.
-  //
-  // Not availble for the case: todo -a read,drink,club
-  // which is one argv argument involves multiple comma.
-  vector<string> task_buffer;
-  string task;
-
-  int comma, i = 1;
-  while(++i < argc){
-    string temp = string(argv[i]);
-    comma = temp.find(',');
-    if (comma != string::npos) {
-      // found a comma in argv[i]
-      if(comma == temp.size()-1){
-        // at the end of the string
-        temp.pop_back();
-        task.append(temp + ' ');
-        task_buffer.push_back(task);
-        task.clear();
-        continue;
-      } else if (comma == temp[0] and temp.size() != 1) {
-        // at the beginning of the string
-        temp.erase(0, 1);
-        task.append(temp);
-        continue;
-      } else if(comma == temp[0] and temp.size() == 1){
-        continue;
-      } else{
-        // at the middle
-        task.append(temp.substr(0, comma));
-        task_buffer.push_back(task);
-        task.clear();
-        task.append(temp.substr(comma+1, temp.size()));
-        continue;
-      }
-    }
-    task.append(string(argv[i]) + ' ');
+  string argv_sum;
+  vector<string> tasks;
+  for (int i = 2; i < argc; i++) {
+    argv_sum.append(argv[i]);
   }
-  task_buffer.push_back(task);
-
-//  for (int i = 2; i < argc; i++) {
-//    task.append(string(argv[i]) + ' ');
-//  } 
+  // boost split string!
+  boost::split(tasks, argv_sum, boost::is_any_of(","));
   // File entry
   ofstream todo_file("/tmp/todo", ios::app);
   if(!todo_file.is_open()){
     cerr << "No file found." << endl;
     exit(1);
   } else{
-    for (i = 0; i < task_buffer.size(); i++) {
-      todo_file << task_buffer[i] << '\n';
+    for (int i = 0; i < tasks.size(); i++) {
+      todo_file << tasks[i] << '\n';
     }
   }
   todo_file.close();
