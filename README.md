@@ -17,7 +17,9 @@ Installation
 ---
 You will need [boost](http://www.boost.org/) as I use boost APIs to resolve string processing problems.
 
-Makefile is under construction.
+Installation:
+> make
+> sudo make install
 
 Usage
 ---
