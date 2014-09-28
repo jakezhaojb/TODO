@@ -125,6 +125,7 @@ int main(int argc, const char *argv[])
   else if(string(argv[1]) == "-r" or string(argv[1]) == "--remove")  mode = 3;
   else if(string(argv[1]) == "-h" or string(argv[1]) == "--help") mode = 4;
   else if(string(argv[1]) == "-cl" or string(argv[1]) == "--clear")  mode = 5;
+  else if(string(argv[1]) == "-v" or string(argv[1]) == "--version")  mode = 6;
   else mode = 0;
   switch(mode){ // function entry
     case 0:
@@ -146,6 +147,10 @@ int main(int argc, const char *argv[])
       if( remove("/tmp/todo") )
         std::cout << "Permission denied: Can't clear all tasks." << std::endl;
       std::cout << "All tasks cleared." << std::endl;
+      break;
+    case 6:
+      std::cout << "TODO - a useful terminal tool" << std::endl;
+      std::cout << "version: 1.0.0, released 09/28/2014" << std::endl;
       break;
   }
 
