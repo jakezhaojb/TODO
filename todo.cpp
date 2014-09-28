@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <cstdio>
 #include <boost/algorithm/string.hpp>
+#include "utils/color.hpp"
 
 using namespace std;
 
@@ -34,7 +35,9 @@ void Show(){
   string temp;
   if (todo_file.is_open()) {
     while (getline(todo_file, temp)){
-      std::cout << "[" << ++cnt << "] " << temp << std::endl;
+      temp = "[" + std::to_string(++cnt) + "] " + temp + "\n";
+      ColorPrint(temp);
+      //std::cout << "[" << ++cnt << "] " << temp << std::endl;
     }
     todo_file.close();
   } else{
@@ -67,7 +70,6 @@ void Add(int argc, const char* argv[]){
 
 
 void Remove(int argc, const char* argv[]){
-  // TODO Remove multiple tasks.
   vector<string> del_id_str;
   vector<int> del_id;
   string argv_sum;
