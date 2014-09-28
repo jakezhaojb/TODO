@@ -66,37 +66,42 @@ void Add(int argc, const char* argv[]){
 }
 
 
-/*
-int TaskParse(string t){
-  int pos_i, pos_j;
-  pos_i = t.find_first_of('[') + 1;
-  pos_j = t.find_first_of(']') - 1;
-  string t_sub = t.substr(pos_i, pos_j);
-  int t_sub_n = std::stod(t_sub);
-  return t_sub_n;
-} */
-
-
 void Remove(int argc, const char* argv[]){
   // TODO Remove multiple tasks.
+  vector<string> del_id_str;
+  vector<int> del_id;
+  string argv_sum;
+  for (int i = 2; i < argc; i++) {
+    argv_sum.append(argv[i]);
+  }
+  boost::split(del_id_str, argv_sum, boost::is_any_of(","));
+  for (int i = 0; i < del_id_str.size(); i++) {
+    if(int tmp = std::stod(del_id_str[i]))
+      del_id.push_back(tmp);
+    else{
+      std::cout << "Remove only accept INTEGER as argument" << std::endl;
+      return;
+    }
+  }
   ofstream temp_todo_file("/tmp/todo.tmp");
   ifstream todo_file("/tmp/todo");
   if(!todo_file.is_open()){
     cerr << "No file found." << endl;
     exit(1);
   }
-  int del_id = std::stod(argv[2]);
   string task_elem;
   int id = 1; // re-align the indexes
+  vector<int>::iterator it;
   while(getline(todo_file, task_elem)){
-    if(id++ != del_id)
+    it = find(del_id.begin(), del_id.end(), id++);
+    if(it == del_id.end())  // not found and reserve.
       temp_todo_file << task_elem + '\n';
-    else
+    else  // not found and delete
       std::cout << "Deleted task: " << task_elem << std::endl;
   }
   temp_todo_file.close();
   todo_file.close();
-  if(rename("/tmp/todo.tmp", "~/Documents/todo")){
+  if(rename("/tmp/todo.tmp", "/tmp/todo")){
     std::cout << "Permission denied: Can't overwrite TODO file." << std::endl;
     exit(1);
   }
