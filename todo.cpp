@@ -52,6 +52,7 @@ void Add(int argc, const char* argv[]){
   vector<string> tasks;
   for (int i = 2; i < argc; i++) {
     argv_sum.append(argv[i]);
+    argv_sum.append(" ");
   }
   // boost split string!
   boost::split(tasks, argv_sum, boost::is_any_of(","));
