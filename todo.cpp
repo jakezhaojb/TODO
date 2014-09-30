@@ -4,6 +4,7 @@
 #include <vector>
 #include <iomanip>
 #include <cstdio>
+#include <cctype>
 #include <boost/algorithm/string.hpp>
 #include "utils/color.hpp"
 
@@ -29,10 +30,11 @@ void ShowUsage(){ // Funtion to show usages of todo.
 
 
 void Show(){
-  // TODO make it fancy!
   ifstream todo_file("/tmp/todo");
   int cnt = 0;
   string temp;
+  std::cout << std::endl;
+  std::cout << "**********************************************************" << std::endl;
   if (todo_file.is_open()) {
     while (getline(todo_file, temp)){
       temp = "[" + std::to_string(++cnt) + "] " + temp + "\n";
@@ -44,6 +46,8 @@ void Show(){
     cerr << "File not exist." << endl;
     exit(1);
   }
+  std::cout << "**********************************************************" << std::endl;
+  std::cout << std::endl;
 }
 
 
@@ -53,6 +57,10 @@ void Add(int argc, const char* argv[]){
   for (int i = 2; i < argc; i++) {
     argv_sum.append(argv[i]);
     argv_sum.append(" ");
+  }
+  // if all whitespaces of argv_sum
+  if (argv_sum.size() == 0) {
+    return;
   }
   // boost split string!
   boost::split(tasks, argv_sum, boost::is_any_of(","));
