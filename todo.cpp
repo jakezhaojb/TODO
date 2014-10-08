@@ -10,8 +10,93 @@
 
 using namespace std;
 
+class todo{
+ private:
+   vector<string> info;
+   int option;
+ public:
+   todo(int, const char*[]);
+   void driver();
+   ~todo();
+   void ShowUsage();
+   void Add();
+   void Remove();
+   void Show();
+};
 
-void ShowUsage(){ // Funtion to show usages of todo.
+
+todo::todo(int n_par, const char* str_par[]){
+  // option setting
+  if (n_par < 2) {
+    option = 0;
+    return;
+  }
+  if(string(str_par[1]) == "-s" or string(str_par[1]) == "--show")
+    option = 1;
+  else if(string(str_par[1]) == "-a" or string(str_par[1]) == "--add")
+    option = 2;
+  else if(string(str_par[1]) == "-r" or string(str_par[1]) == "--remove")
+    option = 3;
+  else if(string(str_par[1]) == "-h" or string(str_par[1]) == "--help")
+    option = 4;
+  else if(string(str_par[1]) == "-cl" or string(str_par[1]) == "--clear")
+    option = 5;
+  else if(string(str_par[1]) == "-v" or string(str_par[1]) == "--version")
+    option = 6;
+  else option = 0;
+
+  // task parsing
+  string str_par_sum;
+  for (int i = 2; i < n_par; i++) {
+    str_par_sum.append(str_par[i]);
+    str_par_sum.append(" ");
+  }
+  // if all white spaces of str_par_sum
+  if (str_par_sum.size() == 0) {
+    // Input is empty.
+    return;
+  }
+  // boost split string!
+  boost::split(info, str_par_sum, boost::is_any_of(","));
+}
+
+
+todo::~todo() {}
+
+
+void todo::driver(){
+  switch(option){
+    case 0:
+      ShowUsage();
+      break;
+    case 1:
+      Show();
+      break;
+    case 2:
+      Add();
+      break;
+    case 3:
+      Remove();
+      break;
+    case 4:
+      ShowUsage();
+      break;
+    case 5:
+      if( remove("/tmp/todo") )
+        std::cout << "Permission denied: Can't clear all tasks." << std::endl;
+      std::cout << "All tasks cleared." << std::endl;
+      break;
+    case 6:
+      std::cout << "TODO - a useful terminal tool" << std::endl;
+      std::cout << "version: 1.0.0, released 09/28/2014" << std::endl;
+      break;
+    default:
+      break;
+  }
+
+}
+
+void todo::ShowUsage(){ // Funtion to show usages of todo.
    std::cout << "Usage:" << std::endl;
 
    std::cout << setw(30) << left << "  -a --add"
@@ -29,7 +114,7 @@ void ShowUsage(){ // Funtion to show usages of todo.
 }
 
 
-void Show(){
+void todo::Show(){
   ifstream todo_file("/tmp/todo");
   int cnt = 0;
   string temp;
@@ -51,43 +136,25 @@ void Show(){
 }
 
 
-void Add(int argc, const char* argv[]){
-  string argv_sum;
-  vector<string> tasks;
-  for (int i = 2; i < argc; i++) {
-    argv_sum.append(argv[i]);
-    argv_sum.append(" ");
-  }
-  // if all whitespaces of argv_sum
-  if (argv_sum.size() == 0) {
-    return;
-  }
-  // boost split string!
-  boost::split(tasks, argv_sum, boost::is_any_of(","));
+void todo::Add(){
   // File entry
   ofstream todo_file("/tmp/todo", ios::app);
   if(!todo_file.is_open()){
     cerr << "No file found." << endl;
     exit(1);
   } else{
-    for (int i = 0; i < tasks.size(); i++) {
-      todo_file << tasks[i] << '\n';
+    for (int i = 0; i < info.size(); i++) {
+      todo_file << info[i] << '\n';
     }
   }
   todo_file.close();
 }
 
 
-void Remove(int argc, const char* argv[]){
-  vector<string> del_id_str;
-  vector<int> del_id;
-  string argv_sum;
-  for (int i = 2; i < argc; i++) {
-    argv_sum.append(argv[i]);
-  }
-  boost::split(del_id_str, argv_sum, boost::is_any_of(","));
-  for (int i = 0; i < del_id_str.size(); i++) {
-    if(int tmp = std::stod(del_id_str[i]))
+void todo::Remove(){
+  std::vector<int> del_id;
+  for (int i = 0; i < info.size(); i++) {
+    if(int tmp = std::stod(info[i]))
       del_id.push_back(tmp);
     else{
       std::cout << "Remove only accept INTEGER as argument" << std::endl;
@@ -122,45 +189,7 @@ void Remove(int argc, const char* argv[]){
 
 int main(int argc, const char *argv[])
 {
-  int mode;
-  if(argc < 2){
-    ShowUsage();
-    return 1;
-  }
-  // mode assign
-  if(string(argv[1]) == "-s" or string(argv[1]) == "--show")  mode = 1;
-  else if(string(argv[1]) == "-a" or string(argv[1]) == "--add") mode = 2;
-  else if(string(argv[1]) == "-r" or string(argv[1]) == "--remove")  mode = 3;
-  else if(string(argv[1]) == "-h" or string(argv[1]) == "--help") mode = 4;
-  else if(string(argv[1]) == "-cl" or string(argv[1]) == "--clear")  mode = 5;
-  else if(string(argv[1]) == "-v" or string(argv[1]) == "--version")  mode = 6;
-  else mode = 0;
-  switch(mode){ // function entry
-    case 0:
-      ShowUsage();
-      break;
-    case 1:
-      Show();
-      break;
-    case 2:
-      Add(argc, argv);
-      break;
-    case 3:
-      Remove(argc, argv);
-      break;
-    case 4:
-      ShowUsage();
-      break;
-    case 5:
-      if( remove("/tmp/todo") )
-        std::cout << "Permission denied: Can't clear all tasks." << std::endl;
-      std::cout << "All tasks cleared." << std::endl;
-      break;
-    case 6:
-      std::cout << "TODO - a useful terminal tool" << std::endl;
-      std::cout << "version: 1.0.0, released 09/28/2014" << std::endl;
-      break;
-  }
-
+  todo td(argc, argv);
+  td.driver();
   return 0;
 }
