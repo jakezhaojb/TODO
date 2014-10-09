@@ -214,11 +214,12 @@ void todo::Remove(){
   // prepare deleting ID.
   std::vector<int> del_id;
   for (int i = 0; i < del_id_set.size(); i++) {
-    if(int tmp = std::stod(del_id_set[i]))
+    try{
+      int tmp = std::stod(del_id_set[i]);
       del_id.push_back(tmp);
-    else{
+    }
+    catch(...){
       std::cout << "Remove only accept INTEGER as argument" << std::endl;
-      return;
     }
   }
   // File entry
