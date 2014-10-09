@@ -7,21 +7,27 @@
 #include <cctype>
 #include <boost/algorithm/string.hpp>
 #include "utils/color.hpp"
+#include "utils/prio.hpp"
 
 using namespace std;
 
 class todo{
  private:
-   vector<string> info;
+   string str_par_sum;  // input string concatenated.
+   vector<string> task;
+   vector<int> prio;
    int option;
- public:
-   todo(int, const char*[]);
-   void driver();
-   ~todo();
+
    void ShowUsage();
    void Add();
    void Remove();
    void Show();
+   void Load(); // TODO
+
+ public:
+   todo(int, const char*[]);
+   void driver();
+   ~todo();
 };
 
 
@@ -55,9 +61,18 @@ todo::todo(int n_par, const char* str_par[]){
   if (str_par_sum.size() == 0) {
     // Input is empty.
     return;
-  }
+  }/*
   // boost split string!
+  vector<string> info;
+  string task_elem;
+  int proi_elem;
   boost::split(info, str_par_sum, boost::is_any_of(","));
+  for (int i = 0; i < info.size(); i++) {
+    if (!proc_info(task_elem, proi_elem, info[i]) ) {
+      std::cout << "Low priority set." << std::endl;
+    }
+  }
+  */
 }
 
 
@@ -96,6 +111,7 @@ void todo::driver(){
 
 }
 
+
 void todo::ShowUsage(){ // Funtion to show usages of todo.
    std::cout << "Usage:" << std::endl;
 
@@ -115,46 +131,81 @@ void todo::ShowUsage(){ // Funtion to show usages of todo.
 
 
 void todo::Show(){
-  ifstream todo_file("/tmp/todo");
-  int cnt = 0;
-  string temp;
-  std::cout << std::endl;
-  std::cout << "**********************************************************" << std::endl;
-  if (todo_file.is_open()) {
-    while (getline(todo_file, temp)){
-      temp = "[" + std::to_string(++cnt) + "] " + temp + "\n";
-      ColorPrint(temp);
-      //std::cout << "[" << ++cnt << "] " << temp << std::endl;
+  ifstream task_file("/tmp/todo");
+  ifstream prio_file("/tmp/prio");
+  string tmp;
+  // task_file reading
+  if(task_file.is_open()){
+    while (getline(task_file, tmp)){
+      task.push_back(tmp);
     }
-    todo_file.close();
   } else{
-    cerr << "File not exist." << endl;
+    cerr << "Task file not exist." << endl;
     exit(1);
   }
-  std::cout << "**********************************************************" << std::endl;
+  task_file.close();
+  // prio file reading
+  if(prio_file.is_open()){
+    while (getline(prio_file, tmp)){
+      prio.push_back(std::stod(tmp));
+    }
+  } else{
+    cerr << "Priority file not exist." << endl;
+    exit(1);
+  }
+  prio_file.close();
+  // align
+  vector<int> prio_idx;
+  for (int i = 0; i < prio.size(); i++) {
+    prio_idx.push_back(i);
+  }
+  sort(prio_idx.begin(), prio_idx.end(),
+       [this](int i1, int i2) {return prio[i1] > prio[i2];} );
+  // print out
   std::cout << std::endl;
+  std::cout << "**********************************************************" << std::endl;
+  for (int i = 0; i < prio_idx.size(); i++) {
+    ColorPrint(task[prio_idx[i]], prio[prio_idx[i]]);
+    std::cout << std::endl;
+  }
+  std::cout << "**********************************************************" << std::endl;
 }
 
 
 void todo::Add(){
-  // File entry
-  ofstream todo_file("/tmp/todo", ios::app);
-  if(!todo_file.is_open()){
-    cerr << "No file found." << endl;
-    exit(1);
-  } else{
-    for (int i = 0; i < info.size(); i++) {
-      todo_file << info[i] << '\n';
+  // boost split string!
+  // TODO DEBUG!!!
+  vector<string> info;
+  string task_elem;
+  int prio_elem;
+  boost::split(info, str_par_sum, boost::is_any_of(","));
+  for (int i = 0; i < info.size(); i++) {
+    if (!proc_info(task_elem, prio_elem, info[i]) ) {
+      std::cout << "Low priority set." << std::endl;
     }
+    task.push_back(task_elem);
+    prio.push_back(prio_elem);
   }
-  todo_file.close();
+  
+  // File entry
+  ofstream task_file("/tmp/todo", ios::app);
+  ofstream prio_file("/tmp/prio", ios::app);
+  if (task.size() != prio.size()) {
+    std::cout << "Tasks and Priority codes are not of same dim." << std::endl;
+  }
+  for (int i = 0; i < task.size(); i++) {
+    task_file << task[i] << '\n';
+    prio_file << prio[i] << '\n';
+  }
+  task_file.close();
+  prio_file.close();
 }
 
 
 void todo::Remove(){
   std::vector<int> del_id;
-  for (int i = 0; i < info.size(); i++) {
-    if(int tmp = std::stod(info[i]))
+  for (int i = 0; i < task.size(); i++) {
+    if(int tmp = std::stod(task[i]))
       del_id.push_back(tmp);
     else{
       std::cout << "Remove only accept INTEGER as argument" << std::endl;
