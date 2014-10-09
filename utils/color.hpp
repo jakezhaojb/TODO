@@ -20,19 +20,19 @@ void ColorPrint(std::string str, int level){
   int color_code = level;
   switch(color_code){
     case 1:
-      printf(ANSI_COLOR_GREEN "%s" ANSI_COLOR_RESET, str.c_str());
+      printf(ANSI_COLOR_CYAN "%s" ANSI_COLOR_RESET, str.c_str()) ;
       break;
     case 2:
-      printf(ANSI_COLOR_YELLOW "%s" ANSI_COLOR_RESET, str.c_str()) ;
-      break;
-    case 3:
       printf(ANSI_COLOR_BLUE "%s" ANSI_COLOR_RESET, str.c_str()) ;
       break;
+    case 3:
+      printf(ANSI_COLOR_GREEN "%s" ANSI_COLOR_RESET, str.c_str());
+      break;
     case 4:
-      printf(ANSI_COLOR_MAGENTA "%s" ANSI_COLOR_RESET, str.c_str()) ;
+      printf(ANSI_COLOR_YELLOW "%s" ANSI_COLOR_RESET, str.c_str()) ;
       break;
     case 5:
-      printf(ANSI_COLOR_CYAN "%s" ANSI_COLOR_RESET, str.c_str()) ;
+      printf(ANSI_COLOR_MAGENTA "%s" ANSI_COLOR_RESET, str.c_str()) ;
       break;
     case 6: // top priority
       printf(ANSI_COLOR_RED "%s" ANSI_COLOR_RESET, str.c_str());
