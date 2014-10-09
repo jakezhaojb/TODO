@@ -163,10 +163,15 @@ void todo::Show(){
   // print out
   std::cout << std::endl;
   std::cout << "**********************************************************" << std::endl;
+  int p_tmp = prio[prio_idx[0]];
   for (int i = 0; i < prio_idx.size(); i++) {
+    if (prio[prio_idx[i]] != p_tmp) {
+      std::cout << "----------------------------------------------------------" << std::endl;
+    }
     std::cout << "[" << i+1 << "] ";
     ColorPrint(task[prio_idx[i]], prio[prio_idx[i]]);
     std::cout << std::endl;
+    p_tmp = prio[prio_idx[i]];
   }
   std::cout << "**********************************************************" << std::endl;
 }
@@ -189,7 +194,7 @@ void todo::Add(){
   // File entry
   ofstream task_file("/tmp/todo", ios::app);
   ofstream prio_file("/tmp/prio", ios::app);
-  if (task.size() != prio.size()) {
+if (task.size() != prio.size()) {
     std::cout << "Tasks and Priority codes are not of same dim." << std::endl;
   }
   for (int i = 0; i < task.size(); i++) {
@@ -202,38 +207,74 @@ void todo::Add(){
 
 
 void todo::Remove(){
+  vector<string> del_id_set;
+  boost::split(del_id_set, str_par_sum, boost::is_any_of(","));
+  // prepare deleting ID.
   std::vector<int> del_id;
-  for (int i = 0; i < task.size(); i++) {
-    if(int tmp = std::stod(task[i]))
+  for (int i = 0; i < del_id_set.size(); i++) {
+    if(int tmp = std::stod(del_id_set[i]))
       del_id.push_back(tmp);
     else{
       std::cout << "Remove only accept INTEGER as argument" << std::endl;
       return;
     }
   }
-  ofstream temp_todo_file("/tmp/todo.tmp");
-  ifstream todo_file("/tmp/todo");
-  if(!todo_file.is_open()){
+  // File entry
+  ofstream temp_task_file("/tmp/todo.tmp");
+  ofstream temp_prio_file("/tmp/prio.tmp");
+  ifstream task_file("/tmp/todo");
+  ifstream prio_file("/tmp/prio");
+  if(!task_file.is_open() || !prio_file.is_open()){
     cerr << "No file found." << endl;
     exit(1);
   }
-  string task_elem;
-  int id = 1; // re-align the indexes
-  vector<int>::iterator it;
-  while(getline(todo_file, task_elem)){
-    it = find(del_id.begin(), del_id.end(), id++);
-    if(it == del_id.end())  // not found and reserve.
-      temp_todo_file << task_elem + '\n';
-    else  // not found and delete
-      std::cout << "Deleted task: " << task_elem << std::endl;
+  // Load tasks and priority into vectors.
+  // task_file reading
+  string tmp;
+  if(task_file.is_open()){
+    while (getline(task_file, tmp)){
+      task.push_back(tmp);
+    }
+  } else{
+    cerr << "Task file not exist." << endl;
+    exit(1);
   }
-  temp_todo_file.close();
-  todo_file.close();
-  if(rename("/tmp/todo.tmp", "/tmp/todo")){
+  task_file.close();
+  // prio file reading
+  if(prio_file.is_open()){
+    while (getline(prio_file, tmp)){
+      prio.push_back(std::stod(tmp));
+    }
+  } else{
+    cerr << "Priority file not exist." << endl;
+    exit(1);
+  }
+  prio_file.close();
+  // align
+  vector<int> prio_idx;
+  for (int i = 0; i < prio.size(); i++) {
+    prio_idx.push_back(i);
+  }
+  sort(prio_idx.begin(), prio_idx.end(),
+       [this](int i1, int i2) {return prio[i1] > prio[i2];} );
+  // Deleting and write in new files.
+  vector<int>::iterator it;
+  for (int i = 0; i < task.size(); i++) {
+    it = find(del_id.begin(), del_id.end(), i+1);
+    if (it == del_id.end()) { // not found and reserve
+      temp_task_file << task[prio_idx[i]] + "\n";
+      temp_prio_file << to_string(prio[prio_idx[i]]) + "\n";
+    } else  // found and delete
+      std::cout << "Deleted task: " << task[prio_idx[i]] << std::endl;
+  }
+  temp_task_file.close();
+  temp_prio_file.close();
+  task_file.close();
+  prio_file.close();
+  if(rename("/tmp/todo.tmp", "/tmp/todo") or rename("/tmp/prio.tmp", "/tmp/prio")){
     std::cout << "Permission denied: Can't overwrite TODO file." << std::endl;
     exit(1);
   }
-
 }
 
 
