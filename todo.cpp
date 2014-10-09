@@ -114,8 +114,10 @@ void todo::driver(){
 void todo::ShowUsage(){ // Funtion to show usages of todo.
    std::cout << "Usage:" << std::endl;
 
-   std::cout << setw(30) << left << "  -a --add"
-             << setw(50) << "Add a new TODO task" << endl;
+   std::cout << setw(30) << left << "  -a --add --p"
+             << setw(50) << "Add a new TODO task with a priority code." << endl
+             << setw(30) << left << ""
+             << setw(50) << "Default priority code is 1(lowest)." << endl;
    std::cout << setw(30) << left << "  -r --remove"
              << setw(50) << "Remove a finished work by its ID" << endl;
    std::cout << setw(30) << left << "  -s --show"
