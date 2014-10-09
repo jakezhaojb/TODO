@@ -52,7 +52,6 @@ todo::todo(int n_par, const char* str_par[]){
   else option = 0;
 
   // task parsing
-  string str_par_sum;
   for (int i = 2; i < n_par; i++) {
     str_par_sum.append(str_par[i]);
     str_par_sum.append(" ");
@@ -165,6 +164,7 @@ void todo::Show(){
   std::cout << std::endl;
   std::cout << "**********************************************************" << std::endl;
   for (int i = 0; i < prio_idx.size(); i++) {
+    std::cout << "[" << i+1 << "] ";
     ColorPrint(task[prio_idx[i]], prio[prio_idx[i]]);
     std::cout << std::endl;
   }
@@ -174,7 +174,6 @@ void todo::Show(){
 
 void todo::Add(){
   // boost split string!
-  // TODO DEBUG!!!
   vector<string> info;
   string task_elem;
   int prio_elem;
