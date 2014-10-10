@@ -176,6 +176,7 @@ void todo::Show(){
     p_tmp = prio[prio_idx[i]];
   }
   std::cout << "**********************************************************" << std::endl;
+  std::cout << std::endl;
 }
 
 
@@ -186,6 +187,7 @@ void todo::Add(){
   int prio_elem;
   boost::split(info, str_par_sum, boost::is_any_of(","));
   for (int i = 0; i < info.size(); i++) {
+    trim(info[i]);
     if (!proc_info(task_elem, prio_elem, info[i]) ) {
       std::cout << "Low priority set." << std::endl;
     }

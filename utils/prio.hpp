@@ -29,5 +29,11 @@ bool proc_info(string& task, int& proi, string info){
 }
 
 
+void trim(string & str){
+  int n = str.find_first_not_of(" ");
+  str.erase(str.begin(), str.begin()+n);
+}
+
+
 
 #endif
