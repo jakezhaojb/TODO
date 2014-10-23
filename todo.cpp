@@ -163,38 +163,6 @@ vector<int> todo::LoadSort(){
 
 void todo::Show(){
   vector<int> prio_idx = LoadSort();
-  /*
-  ifstream task_file("/tmp/todo");
-  ifstream prio_file("/tmp/prio");
-  string tmp;
-  // task_file reading
-  if(task_file.is_open()){
-    while (getline(task_file, tmp)){
-      task.push_back(tmp);
-    }
-  } else{
-    cerr << "Task file not exist." << endl;
-    exit(1);
-  }
-  task_file.close();
-  // prio file reading
-  if(prio_file.is_open()){
-    while (getline(prio_file, tmp)){
-      prio.push_back(std::stod(tmp));
-    }
-  } else{
-    cerr << "Priority file not exist." << endl;
-    exit(1);
-  }
-  prio_file.close();
-  // align
-  vector<int> prio_idx;
-  for (int i = 0; i < prio.size(); i++) {
-    prio_idx.push_back(i);
-  }
-  sort(prio_idx.begin(), prio_idx.end(),
-       [this](int i1, int i2) {return prio[i1] > prio[i2];} );
-  */
   // print out
   std::cout << std::endl;
   std::cout << "**********************************************************" << std::endl;
@@ -244,7 +212,7 @@ void todo::Add(){
   // File entry
   ofstream task_file("/tmp/todo", ios::app);
   ofstream prio_file("/tmp/prio", ios::app);
-if (task.size() != prio.size()) {
+  if (task.size() != prio.size()) {
     std::cout << "Tasks and Priority codes are not of same dim." << std::endl;
   }
   for (int i = 0; i < task.size(); i++) {
@@ -273,41 +241,7 @@ void todo::Remove(){
   // File entry
   ofstream temp_task_file("/tmp/todo.tmp");
   ofstream temp_prio_file("/tmp/prio.tmp");
-  ifstream task_file("/tmp/todo");
-  ifstream prio_file("/tmp/prio");
-  if(!task_file.is_open() || !prio_file.is_open()){
-    cerr << "No file found." << endl;
-    exit(1);
-  }
-  // Load tasks and priority into vectors.
-  // task_file reading
-  string tmp;
-  if(task_file.is_open()){
-    while (getline(task_file, tmp)){
-      task.push_back(tmp);
-    }
-  } else{
-    cerr << "Task file not exist." << endl;
-    exit(1);
-  }
-  task_file.close();
-  // prio file reading
-  if(prio_file.is_open()){
-    while (getline(prio_file, tmp)){
-      prio.push_back(std::stod(tmp));
-    }
-  } else{
-    cerr << "Priority file not exist." << endl;
-    exit(1);
-  }
-  prio_file.close();
-  // align
-  vector<int> prio_idx;
-  for (int i = 0; i < prio.size(); i++) {
-    prio_idx.push_back(i);
-  }
-  sort(prio_idx.begin(), prio_idx.end(),
-       [this](int i1, int i2) {return prio[i1] > prio[i2];} );
+  vector<int> prio_idx = LoadSort();
   // Deleting and write in new files.
   vector<int>::iterator it;
   for (int i = 0; i < task.size(); i++) {
@@ -320,8 +254,6 @@ void todo::Remove(){
   }
   temp_task_file.close();
   temp_prio_file.close();
-  task_file.close();
-  prio_file.close();
   if(rename("/tmp/todo.tmp", "/tmp/todo") or rename("/tmp/prio.tmp", "/tmp/prio")){
     std::cout << "Permission denied: Can't overwrite TODO file." << std::endl;
     exit(1);
