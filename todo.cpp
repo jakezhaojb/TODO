@@ -163,27 +163,43 @@ vector<int> todo::LoadSort(){
 
 void todo::Show(){
   vector<int> prio_idx = LoadSort();
+  vector<int> prio_to_show;
+  vector<string> info;
+
+  bool prio_output_flag = false;
+  int prio_tmp = -1;
+
+  boost::split(info, str_par_sum, boost::is_any_of(","));
+  if (info.size() == 1 && info[0] == "") {
+    prio_output_flag = true;
+    for (int i = 1; i < 7; i++) {  // priority code
+      prio_to_show.push_back(i);  // If "-s", print whole todo list
+    }
+  } else {  // showing tasks of specific priority codes
+      for (int i = 0; i < info.size(); i++) 
+        prio_to_show.push_back(std::stoi(info[i]));
+    }
   // print out
-  std::cout << std::endl;
-  std::cout << "**********************************************************" << std::endl;
-  int p_tmp = prio[prio_idx[0]];
+  std::cout << std::endl << "**********************************************************" << std::endl;
   for (int i = 0; i < prio_idx.size(); i++) {
-    if (prio[prio_idx[i]] != p_tmp) {
-      std::cout << "----------------------------------------------------------" << std::endl;
+    if (find(prio_to_show.begin(), prio_to_show.end(), prio[prio_idx[i]]) == prio_to_show.end())
+      continue;
+    if (prio[prio_idx[i]] != prio_tmp) {
+      std::cout << std::endl;
     }
     std::cout << "[" << i+1 << "] ";
     ColorPrint(task[prio_idx[i]], prio[prio_idx[i]]);
     std::cout << std::endl;
-    p_tmp = prio[prio_idx[i]];
+    prio_tmp = prio[prio_idx[i]];
   }
-  std::cout << "**********************************************************" << std::endl;
-  std::cout << std::endl;
+  std::cout << std::endl << "**********************************************************" << std::endl << std::endl;
 }
 
 
 void todo::Search(){
   std::vector<int> prio_idx = LoadSort();
   std::vector<int> s;
+  // reorder task and prio as prio_idx
   reorder<string>(task, prio_idx);
   reorder<int>(prio, prio_idx);
   s = search(task, str_par_sum);
@@ -200,6 +216,7 @@ void todo::Add(){
   string task_elem;
   int prio_elem;
   boost::split(info, str_par_sum, boost::is_any_of(","));
+  // Add tasks and categorize by theri prio code
   for (int i = 0; i < info.size(); i++) {
     trim(info[i]);
     if (!proc_info(task_elem, prio_elem, info[i]) ) {
@@ -208,7 +225,6 @@ void todo::Add(){
     task.push_back(task_elem);
     prio.push_back(prio_elem);
   }
-  
   // File entry
   ofstream task_file("/tmp/todo", ios::app);
   ofstream prio_file("/tmp/prio", ios::app);
