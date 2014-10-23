@@ -107,21 +107,23 @@ void todo::driver(){
 
 
 void todo::ShowUsage(){ // Funtion to show usages of todo.
-   std::cout << "Usage:" << std::endl;
+   std::cout << "TODO Usage:" << std::endl;
 
-   std::cout << setw(30) << left << "  -a --add --p"
+   std::cout << setw(60) << left << "  -a --add <task> --p <priority>"
              << setw(50) << "Add a new TODO task with a priority code." << endl
-             << setw(30) << left << ""
+             << setw(60) << left << " "
              << setw(50) << "Default priority code is 1(lowest)." << endl;
-   std::cout << setw(30) << left << "  -r --remove"
+   std::cout << setw(60) << left << "  -r --remove"
              << setw(50) << "Remove a finished work by its ID" << endl;
-   std::cout << setw(30) << left << "  -s --show"
-             << setw(50) << "Show your worklist" << endl;
-   std::cout << setw(30) << left << "  -v --version"
+   std::cout << setw(60) << left << "  -s --show <priority>"
+             << setw(50) << "Show your worklist" << endl
+             << setw(60) << left << ""
+             << setw(50) << "Default setting shows entire todo list." << endl;
+   std::cout << setw(60) << left << "  -v --version"
              << setw(50) << "Display version" << endl;
-   std::cout << setw(30) << left << "  -h --help"
+   std::cout << setw(60) << left << "  -h --help"
              << setw(50) << "Display Usage" << endl;
-   std::cout << setw(30) << left << "  -cl --clear"
+   std::cout << setw(60) << left << "  -cl --clear"
              << setw(50) << "Clear all tasks" << endl;
 }
 
