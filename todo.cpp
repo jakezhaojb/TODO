@@ -8,6 +8,7 @@
 #include <boost/algorithm/string.hpp>
 #include "utils/color.hpp"
 #include "utils/prio.hpp"
+#include "utils/proc.hpp"
 
 using namespace std;
 
@@ -22,7 +23,8 @@ class todo{
    void Add();
    void Remove();
    void Show();
-   void Load(); // TODO
+   vector<int> LoadSort(); // TODO
+   void Search();
 
  public:
    todo(int, const char*[]);
@@ -49,6 +51,8 @@ todo::todo(int n_par, const char* str_par[]){
     option = 5;
   else if(string(str_par[1]) == "-v" or string(str_par[1]) == "--version")
     option = 6;
+  else if(string(str_par[1]) == "-i" or string(str_par[1]) == "--index")
+    option = 7;
   else option = 0;
 
   // task parsing
@@ -60,18 +64,7 @@ todo::todo(int n_par, const char* str_par[]){
   if (str_par_sum.size() == 0) {
     // Input is empty.
     return;
-  }/*
-  // boost split string!
-  vector<string> info;
-  string task_elem;
-  int proi_elem;
-  boost::split(info, str_par_sum, boost::is_any_of(","));
-  for (int i = 0; i < info.size(); i++) {
-    if (!proc_info(task_elem, proi_elem, info[i]) ) {
-      std::cout << "Low priority set." << std::endl;
-    }
   }
-  */
 }
 
 
@@ -104,6 +97,8 @@ void todo::driver(){
       std::cout << "TODO - a useful terminal tool" << std::endl;
       std::cout << "version: 1.0.0, released 09/28/2014" << std::endl;
       break;
+    case 7:
+      Search();
     default:
       break;
   }
@@ -131,7 +126,7 @@ void todo::ShowUsage(){ // Funtion to show usages of todo.
 }
 
 
-void todo::Show(){
+vector<int> todo::LoadSort(){
   ifstream task_file("/tmp/todo");
   ifstream prio_file("/tmp/prio");
   string tmp;
@@ -162,6 +157,44 @@ void todo::Show(){
   }
   sort(prio_idx.begin(), prio_idx.end(),
        [this](int i1, int i2) {return prio[i1] > prio[i2];} );
+  return prio_idx;
+}
+
+
+void todo::Show(){
+  vector<int> prio_idx = LoadSort();
+  /*
+  ifstream task_file("/tmp/todo");
+  ifstream prio_file("/tmp/prio");
+  string tmp;
+  // task_file reading
+  if(task_file.is_open()){
+    while (getline(task_file, tmp)){
+      task.push_back(tmp);
+    }
+  } else{
+    cerr << "Task file not exist." << endl;
+    exit(1);
+  }
+  task_file.close();
+  // prio file reading
+  if(prio_file.is_open()){
+    while (getline(prio_file, tmp)){
+      prio.push_back(std::stod(tmp));
+    }
+  } else{
+    cerr << "Priority file not exist." << endl;
+    exit(1);
+  }
+  prio_file.close();
+  // align
+  vector<int> prio_idx;
+  for (int i = 0; i < prio.size(); i++) {
+    prio_idx.push_back(i);
+  }
+  sort(prio_idx.begin(), prio_idx.end(),
+       [this](int i1, int i2) {return prio[i1] > prio[i2];} );
+  */
   // print out
   std::cout << std::endl;
   std::cout << "**********************************************************" << std::endl;
@@ -177,6 +210,19 @@ void todo::Show(){
   }
   std::cout << "**********************************************************" << std::endl;
   std::cout << std::endl;
+}
+
+
+void todo::Search(){
+  std::vector<int> prio_idx = LoadSort();
+  std::vector<int> s;
+  reorder<string>(task, prio_idx);
+  reorder<int>(prio, prio_idx);
+  s = search(task, str_par_sum);
+  for (int i = 0; i < s.size(); i++) {
+    std::cout << "[" << s[i]+1 << "]" << " ";
+    std::cout << task[s[i]] << std::endl;
+  }
 }
 
 
