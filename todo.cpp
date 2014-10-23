@@ -207,7 +207,8 @@ void todo::Search(){
   s = search(task, str_par_sum);
   for (int i = 0; i < s.size(); i++) {
     std::cout << "[" << s[i]+1 << "]" << " ";
-    std::cout << task[s[i]] << std::endl;
+    ColorPrint(task[s[i]], prio[s[i]]);
+    std::cout << std::endl;
   }
 }
 
