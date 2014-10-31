@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
+#include <cassert>
 #include <string>
 #include <vector>
 #include <iomanip>
@@ -18,13 +19,12 @@
 #define ANSI_COLOR_RESET   "\x1b[0m"
 
 #define SCREEN_WIDTH 141
-#define DIALY_WIDTH 40
+#define DIALY_WIDTH 50
 #define ONETIME_WIDTH 80
-#define MID_WIDTH 20
+#define MID_WIDTH 10
 
 
 void ColorPrint(std::string str, int level){
-  //int color_code = rand() % 6 + 1;
   int color_code = level;
   switch(color_code){
     case 1:
@@ -34,25 +34,26 @@ void ColorPrint(std::string str, int level){
       printf(ANSI_COLOR_BLUE "%s" ANSI_COLOR_RESET, str.c_str()) ;
       break;
     case 3:
-      printf(ANSI_COLOR_GREEN "%s" ANSI_COLOR_RESET, str.c_str());
-      break;
-    case 4:
       printf(ANSI_COLOR_YELLOW "%s" ANSI_COLOR_RESET, str.c_str()) ;
       break;
-    case 5:
+    case 4:
       printf(ANSI_COLOR_MAGENTA "%s" ANSI_COLOR_RESET, str.c_str()) ;
       break;
-    case 6: // top priority
+    case 5: // top priority
       printf(ANSI_COLOR_RED "%s" ANSI_COLOR_RESET, str.c_str());
       break;
+    case 99:
+      printf(ANSI_COLOR_GREEN "%s" ANSI_COLOR_RESET, str.c_str());
+      break;
     default:
+      std::cout << str;
       break;
   }
 }
 
 namespace std{
 
-  void SetwColumnPrint(const string& a, const string&b, int color_code){
+  void SetwColumnPrint(const string& a, const string& b, int color_code){
     bool Lflag, Rflag;
     string aL, aR, bL, bR;
     Lflag = a.size() > ONETIME_WIDTH ? true: false;
@@ -61,7 +62,7 @@ namespace std{
       aL = a.substr(0, ONETIME_WIDTH);
       aR = a.substr(ONETIME_WIDTH) + string(-a.size()+2*ONETIME_WIDTH, ' ');
     } else {
-      aL = a;
+      aL = a + string(ONETIME_WIDTH-a.size(), ' ');
       aR = string(ONETIME_WIDTH, ' ');
     }
     if (Rflag) {
@@ -73,33 +74,38 @@ namespace std{
     }
     // print out
     ColorPrint(aL, color_code);
-    std::cout << string(MID_WIDTH, ' ') << bL;
+    std::cout << string(MID_WIDTH-1, ' ') << "▓★   ";
+    ColorPrint(bL, 99);
     if (Lflag || Rflag){
       std::cout << std::endl;
       ColorPrint(aR, color_code);
-      std::cout << string(MID_WIDTH, ' ') << bR;
+      std::cout << string(MID_WIDTH-1, ' ') << "▓★   ";
+      ColorPrint(bR, 99);
     }
     std::cout << std::endl;
   }
 
-  void DoubleColumnPrint(const string& ot, const string& dt){
-    std::cout << setw(ONETIME_WIDTH) << left << ot
-              << setw(5) << left << "☞"
-              << setw(DIALY_WIDTH) << left << dt << endl;
-  }
-
-  void DoubleColumnPrint(const vector<string>& ot, const vector<string>& dt){
+  void DoubleColumnPrint(const vector<string>& ot, const vector<string>& dt, vector<int> color_codes){
+    assert(color_codes.size() == ot.size());
+    // decoration
+    string dec_top, dec_bottom;
+    for (int i = 0; i < SCREEN_WIDTH; i++) {
+      dec_top.append("✪");
+      dec_bottom.append("✪");
+    }
+    std::cout << dec_top << std::endl;
     if(ot.size() > dt.size()){
       for (int i = 0; i < dt.size(); i++)
-        DoubleColumnPrint(ot[i], dt[i]);
+        SetwColumnPrint(ot[i], dt[i], color_codes[i]);
       for (int i = dt.size(); i < ot.size(); i++)
-        DoubleColumnPrint(ot[i], " ");
+        SetwColumnPrint(ot[i], " ", color_codes[i]);
     } else{
       for (int i = 0; i < ot.size(); i++)
-        DoubleColumnPrint(ot[i], dt[i]);
+        SetwColumnPrint(ot[i], dt[i], color_codes[i]);
       for (int i = ot.size(); i < dt.size(); i++)
-        DoubleColumnPrint(" ", dt[i]);
+        SetwColumnPrint(" ", dt[i], 1);
     }
+    std::cout << dec_bottom << std::endl;
 }
 
 }

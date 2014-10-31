@@ -8,22 +8,29 @@
 using namespace std;
 
 
-bool proc_info(string& task, int& proi, string info){
-  int pos = info.find("--p");
-  if (pos == string::npos) {
+bool proc_info(string& task, int& prio, string info){
+  int pos_p, pos_d;
+  pos_p = info.find("--p");
+  pos_d = info.find("--d");
+  if (pos_p == string::npos && pos_d == string::npos) {
     task = info;
-    proi = 1;
+    prio = 1;
     return 0;
-  } else{
-    task = info.substr(0, pos-1);
+  } 
+  else if (pos_p != string::npos){
+    task = info.substr(0, pos_p-1);
     try{
-      proi = std::stod(info.substr(pos+3));
+      prio = std::stod(info.substr(pos_p+3));
     }
     catch(...){
       std::cout << "Input priority argument may not be a number." << std::endl;
-      proi = 1;
+      prio = 1;
       return 0;
     }
+  }
+  else { // (pos_d != string::npos)
+    task = info.substr(pos_d+4);
+    prio = 99;
   }
   return 1;
 }

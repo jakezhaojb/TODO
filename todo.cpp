@@ -6,7 +6,7 @@
 #include <cstdio>
 #include <cctype>
 #include <boost/algorithm/string.hpp>
-#include "utils/color.hpp"
+#include "utils/disp.hpp"
 #include "utils/prio.hpp"
 #include "utils/proc.hpp"
 
@@ -16,6 +16,7 @@ class todo{
  private:
    string str_par_sum;  // input string concatenated.
    vector<string> task;
+   vector<string> Dtask;
    vector<int> prio;
    int option;
 
@@ -23,7 +24,8 @@ class todo{
    void Add();
    void Remove();
    void Show();
-   vector<int> LoadSort(); // TODO
+   vector<int> LoadSort();
+   void LoadDialy();
    void Search();
 
  public:
@@ -89,7 +91,7 @@ void todo::driver(){
       ShowUsage();
       break;
     case 5:
-      if( remove("/tmp/todo") )
+      if( remove("/Users/Shared/todo/todo") )
         std::cout << "Permission denied: Can't clear all tasks." << std::endl;
       std::cout << "All tasks cleared." << std::endl;
       break;
@@ -113,24 +115,36 @@ void todo::ShowUsage(){ // Funtion to show usages of todo.
              << setw(50) << "Add a new TODO task with a priority code." << endl
              << setw(60) << left << " "
              << setw(50) << "Default priority code is 1(lowest)." << endl;
+   std::cout << setw(60) << left << "  -a --add --d <task>"
+             << setw(50) << "Add a dialy task" << endl << endl;
    std::cout << setw(60) << left << "  -r --remove"
-             << setw(50) << "Remove a finished work by its ID" << endl;
+             << setw(50) << "Remove a finished work by its ID" << endl << endl;
    std::cout << setw(60) << left << "  -s --show <priority>"
              << setw(50) << "Show your worklist" << endl
              << setw(60) << left << ""
-             << setw(50) << "Default setting shows entire todo list." << endl;
+             << setw(50) << "Default setting shows entire todo list." << endl << endl;
    std::cout << setw(60) << left << "  -v --version"
-             << setw(50) << "Display version" << endl;
+             << setw(50) << "Display version" << endl << endl;
    std::cout << setw(60) << left << "  -h --help"
-             << setw(50) << "Display Usage" << endl;
+             << setw(50) << "Display Usage" << endl << endl;
    std::cout << setw(60) << left << "  -cl --clear"
-             << setw(50) << "Clear all tasks" << endl;
+             << setw(50) << "Clear all tasks" << endl << endl;
 }
 
+void todo::LoadDialy(){
+  ifstream Dtask_file("/Users/Shared/todo/Dtodo");
+  string tmp;
+  if (Dtask_file.is_open()) {
+    while(getline(Dtask_file, tmp)){
+      Dtask.push_back(tmp);
+    }
+  }
+  Dtask_file.close();
+}
 
 vector<int> todo::LoadSort(){
-  ifstream task_file("/tmp/todo");
-  ifstream prio_file("/tmp/prio");
+  ifstream task_file("/Users/Shared/todo/todo");
+  ifstream prio_file("/Users/Shared/todo/prio");
   string tmp;
   // task_file reading
   if(task_file.is_open()){
@@ -165,8 +179,13 @@ vector<int> todo::LoadSort(){
 
 void todo::Show(){
   vector<int> prio_idx = LoadSort();
-  vector<int> prio_to_show;
+  LoadDialy();
+  vector<int> prio_set;
   vector<string> info;
+
+  // reorder task and prio as prio_idx
+  reorder<string>(task, prio_idx);
+  reorder<int>(prio, prio_idx);
 
   bool prio_output_flag = false;
   int prio_tmp = -1;
@@ -175,26 +194,27 @@ void todo::Show(){
   if (info.size() == 1 && info[0] == "") {
     prio_output_flag = true;
     for (int i = 1; i < 7; i++) {  // priority code
-      prio_to_show.push_back(i);  // If "-s", print whole todo list
+      prio_set.push_back(i);  // If "-s", print whole todo list
     }
   } else {  // showing tasks of specific priority codes
       for (int i = 0; i < info.size(); i++) 
-        prio_to_show.push_back(std::stoi(info[i]));
-    }
-  // print out
-  std::cout << std::endl << "**********************************************************" << std::endl;
-  for (int i = 0; i < prio_idx.size(); i++) {
-    if (find(prio_to_show.begin(), prio_to_show.end(), prio[prio_idx[i]]) == prio_to_show.end())
-      continue;
-    if (prio[prio_idx[i]] != prio_tmp) {
-      std::cout << std::endl;
-    }
-    std::cout << "[" << i+1 << "] ";
-    ColorPrint(task[prio_idx[i]], prio[prio_idx[i]]);
-    std::cout << std::endl;
-    prio_tmp = prio[prio_idx[i]];
+        prio_set.push_back(std::stoi(info[i]));
   }
-  std::cout << std::endl << "**********************************************************" << std::endl << std::endl;
+  // print out
+  vector<int> idx;
+  vector<string> task_to_show;
+  vector<int> prio_to_show;
+  for (int i = 0; i < task.size(); i++) {
+    if (find(prio_set.begin(), prio_set.end(), prio[i]) == prio_set.end())
+      continue;
+    task_to_show.push_back("[" + to_string(i+1) + "] " + task[i]);
+    prio_to_show.push_back(prio[i]);
+    idx.push_back(i);
+  }
+  for (int i = 0; i < Dtask.size(); i++) {
+    Dtask[i] = "[" + to_string(i+1) +  "] " + Dtask[i];
+  }
+  DoubleColumnPrint(task_to_show, Dtask, prio_to_show);
 }
 
 
@@ -229,40 +249,70 @@ void todo::Add(){
     prio.push_back(prio_elem);
   }
   // File entry
-  ofstream task_file("/tmp/todo", ios::app);
-  ofstream prio_file("/tmp/prio", ios::app);
+  ofstream task_file("/Users/Shared/todo/todo", ios::app);
+  ofstream prio_file("/Users/Shared/todo/prio", ios::app);
+  ofstream Dtask_file("/Users/Shared/todo/Dtodo", ios::app);
+  ofstream Dprio_file("/Users/Shared/todo/Dprio", ios::app);
   if (task.size() != prio.size()) {
     std::cout << "Tasks and Priority codes are not of same dim." << std::endl;
   }
   for (int i = 0; i < task.size(); i++) {
-    task_file << task[i] << '\n';
-    prio_file << prio[i] << '\n';
+    if (prio[i] == 99) {
+      Dtask_file << task[i] << '\n';
+      Dprio_file << prio[i] << '\n';
+    } else {
+      task_file << task[i] << '\n';
+      prio_file << prio[i] << '\n';
+    }
   }
   task_file.close();
   prio_file.close();
+  Dtask_file.close();
+  Dprio_file.close();
 }
 
 
 void todo::Remove(){
-  vector<string> del_id_set;
-  boost::split(del_id_set, str_par_sum, boost::is_any_of(","));
+  int pos_d = str_par_sum.find("--d");
+  vector<string> del_id_set, del_id_set_dialy;
+  if (pos_d != string::npos){
+    string tmp, tmpD;
+    tmp = str_par_sum.substr(0, pos_d-1);
+    tmpD = str_par_sum.substr(pos_d+3);
+    boost::split(del_id_set, tmp, boost::is_any_of(","));
+    boost::split(del_id_set_dialy, tmpD, boost::is_any_of(","));
+  } else{
+    boost::split(del_id_set, str_par_sum, boost::is_any_of(","));
+  }
   // prepare deleting ID.
-  std::vector<int> del_id;
+  std::vector<int> del_id, del_id_dialy;
   for (int i = 0; i < del_id_set.size(); i++) {
     try{
       int tmp = std::stod(del_id_set[i]);
       del_id.push_back(tmp);
     }
     catch(...){
-      std::cout << "Remove only accept INTEGER as argument" << std::endl;
+      //std::cout << "Remove only accept INTEGER as argument" << std::endl;
+    }
+  }
+  for (int i = 0; i < del_id_set_dialy.size(); i++) {
+    try{
+      int tmp = std::stod(del_id_set_dialy[i]);
+      del_id_dialy.push_back(tmp);
+    }
+    catch(...){
+      //std::cout << "Remove only accept INTEGER as argument" << std::endl;
     }
   }
   // File entry
-  ofstream temp_task_file("/tmp/todo.tmp");
-  ofstream temp_prio_file("/tmp/prio.tmp");
+  ofstream temp_task_file("/Users/Shared/todo/todo.tmp");
+  ofstream temp_prio_file("/Users/Shared/todo/prio.tmp");
+  ofstream temp_task_file_dialy("/Users/Shared/todo/Dtodo.tmp");
   vector<int> prio_idx = LoadSort();
+  LoadDialy();
   // Deleting and write in new files.
   vector<int>::iterator it;
+  vector<int>::iterator itD;
   for (int i = 0; i < task.size(); i++) {
     it = find(del_id.begin(), del_id.end(), i+1);
     if (it == del_id.end()) { // not found and reserve
@@ -271,9 +321,19 @@ void todo::Remove(){
     } else  // found and delete
       std::cout << "Deleted task: " << task[prio_idx[i]] << std::endl;
   }
+  for (int i = 0; i < Dtask.size(); i++) {
+    itD = find(del_id_dialy.begin(), del_id_dialy.end(), i+1);
+    if (itD == del_id_dialy.end()) {
+      temp_task_file_dialy << Dtask[i] + "\n";
+   } else
+     std::cout << "Deleted task: " << Dtask[i] << std::endl;
+  }
   temp_task_file.close();
   temp_prio_file.close();
-  if(rename("/tmp/todo.tmp", "/tmp/todo") or rename("/tmp/prio.tmp", "/tmp/prio")){
+  temp_task_file_dialy.close();
+  if(rename("/Users/Shared/todo/todo.tmp", "/Users/Shared/todo/todo") || 
+     rename("/Users/Shared/todo/prio.tmp", "/Users/Shared/todo/prio") ||
+     rename("/Users/Shared/todo/Dtodo.tmp", "/Users/Shared/todo/Dtodo")){
     std::cout << "Permission denied: Can't overwrite TODO file." << std::endl;
     exit(1);
   }
